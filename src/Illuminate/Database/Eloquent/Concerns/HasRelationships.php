@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\LazyLoadingViolationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -1073,6 +1074,30 @@ trait HasRelationships
     public function relationLoaded($key)
     {
         return array_key_exists($key, $this->relations);
+    }
+
+    /**
+     * Validates whether the given relation is loaded.
+     *
+     * @param  string  $relation
+     * @return void
+     */
+    public function ensureRelationLoaded(string $relation): void
+    {
+        [$immediateRelation, $childRelation] = array_replace(
+            [null, null],
+            explode('.', $relation, 2),
+        );
+
+        if (! $this->relationLoaded($immediateRelation)) {
+            throw new LazyLoadingViolationException(model: $this, relation: $immediateRelation);
+        }
+
+        if ($childRelation) {
+            foreach ($this->$immediateRelation as $related) {
+                $related->ensureRelationLoaded($childRelation);
+            }
+        }
     }
 
     /**
