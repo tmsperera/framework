@@ -29,6 +29,32 @@ class EloquentModelNestedRelationLoadedTest extends DatabaseTestCase
         });
     }
 
+    public function testWhenRelationIsInvalid()
+    {
+        $one = One::query()->create();
+        $one->twos()->create();
+
+        $model = One::query()
+            ->with('twos')
+            ->find($one->id);
+
+        $this->assertFalse($model->nestedRelationLoaded('.'));
+        $this->assertFalse($model->nestedRelationLoaded('invalid'));
+    }
+
+    public function testWhenNestedRelationIsInvalid()
+    {
+        $one = One::query()->create();
+        $one->twos()->create();
+
+        $model = One::query()
+            ->with('twos')
+            ->find($one->id);
+
+        $this->assertFalse($model->nestedRelationLoaded('twos.'));
+        $this->assertFalse($model->nestedRelationLoaded('twos.invalid'));
+    }
+
     public function testWhenRelationNotLoaded()
     {
         $one = One::query()->create();

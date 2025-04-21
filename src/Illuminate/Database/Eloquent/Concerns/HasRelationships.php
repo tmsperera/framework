@@ -1083,7 +1083,7 @@ trait HasRelationships
      */
     public function nestedRelationLoaded(string $relationPath): bool
     {
-        [$relation, $childRelation] = array_replace(
+        [$relation, $nestedRelation] = array_replace(
             [null, null],
             explode('.', $relationPath, 2),
         );
@@ -1092,9 +1092,9 @@ trait HasRelationships
             return false;
         }
 
-        if ($childRelation) {
+        if ($nestedRelation !== null) {
             foreach ($this->$relation as $related) {
-                if (! $related->nestedRelationLoaded($childRelation)) {
+                if (! $related->nestedRelationLoaded($nestedRelation)) {
                     return false;
                 }
             }
